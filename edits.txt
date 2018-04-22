@@ -1,0 +1,18 @@
+Marie Leung (mcleung)
+
+TP1 Edit History
+
+- Created graphics. This includes setting up all the modes in the game, including:
+	- title screen, "new game" and "instructions" features accessible, has image
+	- character selection screen, not set up because classes aren't ready
+	- instructions, not written out but that's easy; has back button
+	- game mode, has limited scrolling area, has image, needs a lot of work!
+	- controls screen, comes up in game when you press 'c'
+	- death screen, since there is no player, currently pressing 'n' to "die"
+
+Most things that I've done so far are setting up for inserting features into the game.
+I feel like it's hard to create features without having a framework to put it in first.
+Checklist includes creating, spawning, and having functional enemies, as well as making
+the player and bullets work. After that it'll just be small features like saving and quitting,
+and improving and replacing all the graphics. I'm planning on making my own if I don't find
+consistent ones that work with my map.
