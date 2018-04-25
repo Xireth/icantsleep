@@ -4,23 +4,37 @@
 
 from tkinter import *
 import random
+import time # time.time() difference
 
 ## Init
 
 def init(data):
     data.mode = "titleScreen"
+    
+    # title margins
     data.leftMargin = (2/3) * data.width
     data.margin0 = (3/8) * data.height
     data.margin1 = data.height // 2
     data.margin2 = (5/8) * data.height
     data.margin3 = (3/4) * data.height
     data.margin4 = (7/8) * data.height
+    
+    # nav margins
     data.backArrowX = 90 # right side
     data.backArrowY = data.height - 120 # top
     data.startButtonX = data.width//2 - 80
     data.startButtonY = data.height//2 + 270
     data.startButtonW = 160
     data.startButtonH = 50
+    
+    # images
+    data.titleBG = PhotoImage(file="cityruinstitle.gif")
+    data.levelBG = PhotoImage(file="cityruins.gif")
+    
+    # colors
+    data.M4col = "purple1"
+    data.SRcol = "deeppink"
+    data.pyroCol = "darkorange"
     
     # playable size: 2560 x 1440
     # viewable size: 3840 x 1800
@@ -30,9 +44,15 @@ def init(data):
     data.playRectH = 2 * data.height
     data.xScroll = data.width // 20
     data.yScroll = data.height // 20
+    data.timerCalls = 0
     
-    data.titleBG = PhotoImage(file="cityruinstitle.gif")
-    data.levelBG = PhotoImage(file="cityruins.gif")
+    # game info
+    data.player = "M4"
+    data.bullets = []
+    
+    # enemy info
+    data.enemyR = 40
+
 
 ## Classes
 
@@ -67,32 +87,33 @@ class M4(Player): # standard hitscan gun
     def attack(self):
         return self.attack
 
-class Sniper(Player): # high damage gun but have to scope
+class SR(Player): # high damage gun but have to scope
     def __init__(self, health, attack, defense, scope=False, damage=0):
         super().__init__(self, health, attack, defense, damage)
         self.scope = scope
     
     def scoped(self, event):
-        if self.scope == False and event.x: # RIGHT CLICK?
+        if self.scope == False and event.num == "Button-3":
             self.scope = True
-        elif self.scope == True and event.x:
+        elif self.scope == True and event.num == "Button-3":
             self.scope = False
     
     def attack(self):
         if self.scope:
             return self.attack
-        else:
-            return 0
 
 class Pyro(Player): # burns enemies
     def __init__(self, health, attack, defense, damage=0):
         super().__init__(self, health, attack, defense, damage)
-    # how to do damage over time?
+    
+    def attack(self):
+        if data.timerCalls % 5 == 0 and event.num == "Button-1":
+            return self.attack
 
 # Enemies
     
 class MiniEnemy(object):
-    def __init__(self, health, attack, damage=0):
+    def __init__(self, x, y, health, attack, damage=0):
         self.health = health
         self.attack = attack
         self.damage = damage
@@ -111,58 +132,73 @@ class MiniEnemy(object):
             return True
         else:
             return False
-
-class NumEnemy(MiniEnemy):
-    def __init__(self, health, attack, damage=0):
-        super().__init__(self, health, attack, damage)
     
     def draw(self, canvas):
-        pass
+        canvas.create_oval(self.x - data.enemyR, self.y - data.enemyR,
+                           self.x + data.enemyR, self.y + data.enemyR,
+                           fill="white")
 
-# little number icons that deal damage of their number
-
-class GraphicEnemy(MiniEnemy):
-    def __init__(self, health, attack, damage=0):
-        super().__init__(self, health, attack, damage)
-
-class CircleEnemy(GraphicEnemy):
-    def __init__(self, health, attack, damage=0):
-        super().__init__(self, health, attack, damage)
-    
-    def draw(self, canvas):
-        pass
-
-class SquareEnemy(GraphicEnemy):
-    def __init__(self, health, attack, damage=0):
-        super().__init__(self, health, attack, damage)
-    
-    def draw(self, canvas):
-        pass
-
-class TriangleEnemy(GraphicEnemy):
-    def __init__(self, health, attack, damage=0):
-        super().__init__(self, health, attack, damage)
+# class NumEnemy(MiniEnemy):
+#     def __init__(self, health, attack, damage=0):
+#         super().__init__(self, health, attack, damage)
+#     
+#     def draw(self, canvas):
+#         pass
+# 
+# # little number icons that deal damage of their number
+# 
+# class GraphicEnemy(MiniEnemy):
+#     def __init__(self, health, attack, damage=0):
+#         super().__init__(self, health, attack, damage)
+# 
+# class CircleEnemy(GraphicEnemy):
+#     def __init__(self, health, attack, damage=0):
+#         super().__init__(self, health, attack, damage)
+#     
+#     def draw(self, canvas):
+#         pass
+# 
+# class SquareEnemy(GraphicEnemy):
+#     def __init__(self, health, attack, damage=0):
+#         super().__init__(self, health, attack, damage)
+#     
+#     def draw(self, canvas):
+#         pass
+# 
+# class TriangleEnemy(GraphicEnemy):
+#     def __init__(self, health, attack, damage=0):
+#         super().__init__(self, health, attack, damage)
     
     def draw(self, canvas):
         pass
 
 # boss probably doesn't need class since there's only one
 
+class Bullet(object):
+    def __init__(self, x, y, r=10):
+        self.x = x
+        self.y = y
+    
+    def draw(self, canvas):
+        if (data.player == "M4"):
+            bulletCol = data.M4col
+        elif (data.player == "SR"):
+            bulletCol = data.SRcol
+        elif (data.player == "Pyro"):
+            bulletCol = data.pyroCol
+        canvas.create_oval(self.x - self.r, self.y - self.r, 
+                           self.x + self.r, self.y + self.r,
+                           fill=bulletCol)
+    
+    def move(self):
+        self.y -= 1
+
 ## Helper Functions
-
-def drawBullet(): # draw circle
-    pass
-
-def fireBullet(): # call drawBullet() at correct trajectories
-    pass
 
 def drawAmmo():
     pass
 
 def dropAmmo(): # drops ammo pack from sky, will be on timer of 10s
-    pass
-
-def drawBoss():
     pass
 
 # add map collision with "houses"
@@ -242,10 +278,10 @@ def titleScreenMousePressed(event, data):
         pass # "Quit"
 
 def titleScreenKeyPressed(event, data):
-    pass
+    pass # done
 
 def titleScreenTimerFired(data):
-    pass
+    pass # done
 
 def titleScreenRedrawAll(canvas, data):
     canvas.create_image(0, 0, anchor=NW, image=data.titleBG)
@@ -259,6 +295,7 @@ def titleScreenRedrawAll(canvas, data):
                        anchor=NW, font="Arial 26", fill="white")
     canvas.create_text(data.leftMargin, data.margin1, text="Load Game", 
                        anchor=NW, font="Arial 26", fill="white")
+                       # saves enemy count, time survived, kills, player
     canvas.create_text(data.leftMargin, data.margin2, text="Instructions", 
                        anchor=NW, font="Arial 26", fill="white")
     canvas.create_text(data.leftMargin, data.margin3, text="Quit", 
@@ -271,10 +308,10 @@ def instructionsMousePressed(event, data):
         data.mode = "titleScreen"
 
 def instructionsKeyPressed(event, data):
-    pass
+    pass # done
 
 def instructionsTimerFired(data):
-    pass
+    pass # done
 
 def instructionsRedrawAll(canvas, data):
     canvas.create_text(data.width/2, data.height/8,
@@ -285,14 +322,14 @@ def instructionsRedrawAll(canvas, data):
 ## MODE: controlScreen
 
 def controlScreenMousePressed(event, data):
-    pass
+    pass # done
 
 def controlScreenKeyPressed(event, data):
     if (event.char == "c"):
         data.mode = "gameMode"
 
 def controlScreenTimerFired(data):
-    pass
+    pass # done
 
 def controlScreenRedrawAll(canvas, data):
     canvas.create_text(data.width/2, data.height/8,
@@ -310,10 +347,25 @@ def charSelectMousePressed(event, data):
         data.mode = "gameMode"
 
 def charSelectKeyPressed(event, data):
-    pass
+    charList = ["M4", "SR", "Pyro"]
+    for i in range(len(charList)):
+        if (charList[i] == data.player):
+            curPlayerIndex = i
+        if (event.keysym == "LEFT"):
+            if (i == 0):
+                curPlayerIndex = 2
+            else:
+                curPlayerIndex -= 1
+        elif (event.keysym == "RIGHT"):
+            if (i == 2):
+                curPlayerIndex = 0
+            else:
+                curPlayerIndex += 1
+    data.player = charList[curPlayerIndex]
+    print("Current selection: ", data.player)
 
 def charSelectTimerFired(data):
-    pass
+    pass # done
 
 def charSelectRedrawAll(canvas, data):
     canvas.create_text(data.width/2, data.height/8,
@@ -328,7 +380,11 @@ def charSelectRedrawAll(canvas, data):
 ## MODE: gameMode
 
 def gameModeMousePressed(event, data):
-    pass # will fire gun at whatever trajectory was determined by 'Q' and 'E'
+    # if (event.num == "Button-1"):
+    #     newBul = Bullet(data.width//2, data.height)
+    #     data.bullets.append(newBul)
+    pass
+        
 
 def gameModeKeyPressed(event, data):
     if (event.char == 'w' and data.playRectY < data.height//2): # look up
@@ -346,15 +402,22 @@ def gameModeKeyPressed(event, data):
     if (event.char == 'e'): # lean right with gun
         pass
 
+    # testing
     elif (event.char == 'c'):
         data.mode = "controlScreen"
     elif (event.char == 'n'): # for testing purposes
         data.mode = "deathScreen"
     elif (event.char == 'm'): # for testing purposes
         data.mode = "titleScreen"
+    
+    if (event.keysym == "SPACE"):
+        newBul = Bullet(data.width//2, data.height)
+        data.bullets.append(newBul)
 
 def gameModeTimerFired(data):
-    pass
+    data.timerCalls += 1 # 0.1s
+    for bullet in data.bullets:
+        bullet.move()
 
 def gameModeRedrawAll(canvas, data):
     canvas.create_image(data.playRectX - data.width//2, 
@@ -371,6 +434,10 @@ def gameModeRedrawAll(canvas, data):
     canvas.create_text(data.playRectX + data.width,
                        data.playRectY + data.height, text="board center",
                        font="Arial 16") # for testing purposes
+    
+    # bullets
+    for bullet in data.bullets:
+        bullet.draw()
 
 ## MODE: deathScreen
 
@@ -382,10 +449,10 @@ def deathScreenMousePressed(event, data):
         data.mode = "titleScreen"
 
 def deathScreenKeyPressed(event, data):
-    pass
+    pass # done
 
 def deathScreenTimerFired(data):
-    pass
+    pass # done
 
 def deathScreenRedrawAll(canvas, data):
     canvas.create_text(data.width/2, data.height/4,
@@ -415,6 +482,10 @@ def run(width=1280, height=720):
         keyPressed(event, data)
         redrawAllWrapper(canvas, data)
 
+    def rightMousePressedWrapper(event, canvas, data):
+        rightMousePressed(event, data)
+        redrawAllWrapper(canvas, data)
+
     def timerFiredWrapper(canvas, data):
         timerFired(data)
         redrawAllWrapper(canvas, data)
@@ -434,6 +505,8 @@ def run(width=1280, height=720):
     # set up events
     root.bind("<Button-1>", lambda event:
                             mousePressedWrapper(event, canvas, data))
+    root.bind("<Button-3>", lambda event:
+                            rightMousePressedWrapper(event, canvas, data))
     root.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data))
     timerFiredWrapper(canvas, data)
